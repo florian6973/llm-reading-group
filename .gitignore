@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Pytorch models
+*.pt
+
 # Distribution / packaging
 .Python
 build/
