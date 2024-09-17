@@ -8,7 +8,7 @@ from model import GPT
 
 path = 'trained_models/ckpt.pt'
 model = GPT(GPTConfig(vocab_size=66))
-model.load_state_dict(torch.load(path)['model'])
+model.load_state_dict(torch.load(path, weights_only=False)['model'])
 model.eval()
 
 # after 10 min of training

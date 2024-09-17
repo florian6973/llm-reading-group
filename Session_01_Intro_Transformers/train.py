@@ -27,8 +27,8 @@ def main():
 
     # system
     device = 'cpu' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1' etc., or try 'mps' on macbooks
-    dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 'float32', 'bfloat16', or 'float16', the latter will auto implement a GradScaler
-    compile = False # use PyTorch 2.0 to compile the model to be faster
+    dtype = 'float32'
+    # dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 'float32', 'bfloat16', or 'float16', the latter will auto implement a GradScaler
     # -----------------------------------------------------------------------------
     # config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
     # config = {k: globals()[k] for k in config_keys} # will be useful for logging
@@ -38,7 +38,6 @@ def main():
     # if not ddp, we are running on a single gpu, and one process
     master_process = True
     seed_offset = 0
-    ddp_world_size = 1
     # tokens_per_iter = gradient_accumulation_steps * ddp_world_size * batch_size * block_size
     # print(f"tokens per iteration will be: {tokens_per_iter:,}")
 
@@ -54,7 +53,7 @@ def main():
     ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
 
     # poor man's data loader
-    batch_size = 12
+    batch_size = 128 #12
     gptconf = GPTConfig()
 
     def get_batch(split):
