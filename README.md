@@ -1,6 +1,6 @@
 # 2024-2025 LLM reading group
 
-This repo contains the coding materials for the reading groupof Columbia DBMI.
+This repo contains the coding materials for the reading group of Columbia DBMI.
 
 ## Setup
 
