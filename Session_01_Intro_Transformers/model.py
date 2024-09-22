@@ -14,6 +14,8 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
+from tqdm import tqdm
+
 class LayerNorm(nn.Module):
     """ LayerNorm but with an optional bias. PyTorch doesn't support simply bias=False """
 
@@ -234,6 +236,7 @@ class GPT(nn.Module):
 
     @torch.no_grad()
     def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+        # top k = 1 for most greedy search
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
@@ -258,3 +261,195 @@ class GPT(nn.Module):
             idx = torch.cat((idx, idx_next), dim=1)
 
         return idx
+
+    # generation with beam search
+    # @torch.no_grad()
+    # def generate_beam_search(self, idx, max_new_tokens, beam_size=1, temperature=1.0, top_k=None):
+    #     """
+    #     Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
+    #     the sequence max_new_tokens times, feeding the predictions back into the model each time.
+    #     Most likely you'll want to make sure to be in model.eval() mode of operation for this.
+    #     """
+    #     b, t = idx.size()
+    #     # if the sequence context is growing too long we must crop it at block_size
+    #     idx_cond = idx if t <= self.config.block_size else idx[:, -self.config.block_size:]
+    #     # forward the model to get the logits for the index in the sequence
+    #     logits, _ = self(idx_cond)
+    #     # pluck the logits at the final step and scale by desired temperature
+    #     logits = logits[:, -1, :] / temperature
+    #     # optionally crop the logits to only the top k options
+    #     if top_k is not None:
+    #         v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+    #         logits[logits < v[:, [-1]]] = -float('Inf')
+    #     # apply softmax to convert logits to (normalized) probabilities
+    #     probs = F.softmax(logits, dim=-1)
+    #     # sample from the distribution
+    #     idx_next = torch.multinomial(probs, num_samples=1)
+    #     # append sampled index to the running sequence and continue
+    #     idx = torch.cat((idx, idx_next), dim=1)
+
+    #     return idx
+
+    @torch.no_grad()
+    def greedy_search(self, idx, max_new_tokens, temperature = 1.):
+        for _ in range(max_new_tokens):
+            # if the sequence context is growing too long we must crop it at block_size
+            idx_cond = idx if idx.size(1) <= self.config.block_size else idx[:, -self.config.block_size:]
+            # forward the model to get the logits for the index in the sequence
+            logits, _ = self(idx_cond)
+            # pluck the logits at the final step and scale by desired temperature
+            logits = logits[:, -1, :] / temperature
+            # optionally crop the logits to only the top k options
+            # if top_k is not None:
+            #     v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+            #     logits[logits < v[:, [-1]]] = -float('Inf')
+            # apply softmax to convert logits to (normalized) probabilities
+            probs = F.softmax(logits, dim=-1)
+            # sample from the distribution
+            # idx_next = torch.multinomial(probs, num_samples=1)
+            idx = torch.cat((idx, torch.argmax(probs, dim=-1).unsqueeze(-1)), dim=1)
+            # append sampled index to the running sequence and continue
+            # idx = torch.cat((idx, idx_next), dim=1)
+        return idx
+    
+    @torch.no_grad()
+    def get_log_probs(self, idx, temperature, top_k):
+        idx_cond = idx if idx.size(1) <= self.config.block_size else idx[:, -self.config.block_size:]
+        # forward the model to get the logits for the index in the sequence
+        logits, _ = self(idx_cond)
+        # pluck the logits at the final step and scale by desired temperature
+        logits = logits[:, -1, :] / temperature
+        if top_k is not None:
+            v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+            logits[logits < v[:, [-1]]] = -float('Inf')
+        # apply softmax to convert logits to (normalized) probabilities
+        probs = F.log_softmax(logits, dim=-1)
+        return probs
+    
+    def transition_fn(self, state):
+        beam_width = 5
+        temperature = 1.0
+        # print(state)
+
+        idx_cond = state if state.size(1) <= self.config.block_size else state[:, -self.config.block_size:]
+        # forward the model to get the logits for the index in the sequence
+        logits, _ = self(idx_cond)
+        # pluck the logits at the final step and scale by desired temperature
+        logits = logits[:, -1, :] / temperature
+        probs = F.log_softmax(logits, dim=-1)
+
+        probabilities, idx = probs.topk(
+            k = beam_width, 
+            axis = -1
+        )
+
+        # print(probabilities.shape)
+        
+        for i in range(beam_width):
+            yield probabilities[:, i].unsqueeze(-1), torch.cat((state, idx[:, i].unsqueeze(-1)), dim=1)
+
+    def score_fn(self, action):
+        return action
+
+
+    # log likelihood  avoid underflow when computing probabilities of long sequences.
+    # https://hussainwali.medium.com/simple-implementation-of-beam-search-in-python-64b2d3e2fd7e
+    @torch.no_grad()
+    def beam_search_abs(self, start, transition_fn, score_fn, beam_width, max_len):
+        # `start`: the initial state
+        # `transition_fn`: a function that takes a state and returns a list of (action, next_state) pairs
+        # `score_fn`: a function that takes an action and returns a score
+        # `beam_width`: the number of candidates to keep at each step
+        # `max_len`: the maximum length of the output sequence
+        
+        # Initialize the beam with the start state
+        beam = [(start, [], 0)]
+        
+        # Iterate until we reach the maximum length or run out of candidates
+        for i in range(max_len):
+            candidates = []
+            
+            # Generate new candidates by expanding each current candidate
+            for state, seq, score in beam:
+                for action, next_state in transition_fn(state):
+                    new_seq = seq + [action]
+                    new_score = score + score_fn(action)
+                    candidates.append((next_state, new_seq, new_score))
+                    
+            # Select the top `beam_width` candidates based on their scores
+            beam = sorted(candidates, key=lambda x: x[2], reverse=True)[:beam_width]
+            
+        # Return the sequence with the highest score
+        return max(beam, key=lambda x: x[2])[0]
+
+    # https://github.com/jarobyte91/pytorch_beam_search/blob/master/src/pytorch_beam_search/autoregressive/search_algorithms.py
+    def beam_search(
+        self, 
+        idx0, 
+        predictions = 20,
+        beam_width = 5,
+        temperature = 1.0,
+    ):
+        """
+        Implements Beam Search to extend the sequences given in X. The method can compute 
+        several outputs in parallel with the first dimension of X.
+
+        Parameters
+        ----------    
+        X: LongTensor of shape (examples, length)
+            The sequences to start the decoding process.
+
+        predictions: int
+            The number of tokens to append to X.
+
+        beam_width: int
+            The number of candidates to keep in the search.
+
+        Returns
+        -------
+        X: LongTensor of shape (examples, length + predictions)
+            The sequences extended with the decoding process.
+
+        probabilities: FloatTensor of length examples
+            The estimated log-probabilities for the output sequences. They are computed by iteratively adding the 
+            probability of the next token at every step.
+        """
+        with torch.no_grad():
+            # The next command can be a memory bottleneck, but can be controlled with the batch 
+            # size of the predict method.
+            next_probabilities = self.get_probs(idx0, temperature, None)
+            vocabulary_size = next_probabilities.shape[-1]
+            probabilities, idx = next_probabilities.squeeze().log_softmax(-1)\
+                .topk(k = beam_width, axis = -1)
+            # next_chars = idx.reshape(-1, 1)
+            print(idx0.shape, idx.shape)
+            X = torch.cat((idx0, idx), axis = -1)
+            # This has to be minus one because we already produced a round
+            # of predictions before the for loop.
+            predictions_iterator = range(predictions - 1)
+            for i in predictions_iterator:
+                next_probabilities = []
+                next_probabilities.append(
+                    self.get_probs(X, temperature, None)
+                )
+                
+                next_probabilities = torch.cat(next_probabilities, axis = 0)
+                next_probabilities = next_probabilities.reshape(
+                    (-1, beam_width, next_probabilities.shape[-1])
+                )
+                probabilities = probabilities.unsqueeze(-1) + next_probabilities
+                probabilities = probabilities.flatten(start_dim = 1)
+                probabilities, idx = probabilities.topk(
+                    k = beam_width, 
+                    axis = -1
+                )
+                next_chars = torch.remainder(idx, vocabulary_size).flatten()\
+                    .unsqueeze(-1)
+                best_candidates = (idx / vocabulary_size).long()
+                best_candidates += torch.arange(
+                    X.shape[0] // beam_width, 
+                    device = X.device
+                ).unsqueeze(-1) * beam_width
+                X = X[best_candidates].flatten(end_dim = -2)
+                X = torch.cat((X, next_chars), axis = 1)
+            return X.reshape(-1, beam_width, X.shape[-1]), probabilities
