@@ -1,6 +1,11 @@
-torch
+torch==2.2.2
+torchdata==0.7.1
+torchtext==0.17.1
 numpy
 tqdm
 bert-score
 ray[tune]
 tokenizers
+spacy
+GPUtil
+altair

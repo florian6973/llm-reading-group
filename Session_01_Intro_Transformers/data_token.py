@@ -28,7 +28,7 @@ tokenizer.pre_tokenizer = Whitespace()
 
 
 # Trainer for BPE
-trainer = BpeTrainer(vocab_size=250,
+trainer = BpeTrainer(vocab_size=2000,
                      special_tokens=['</w>', '<nl>'])
                     #  special_tokens=['<nl>', '<whs>'])#special_tokens=["<unk>", "<pad>", "<bos>", "<eos>"])
 
@@ -93,3 +93,6 @@ def test():
     output_text = decode(input_tensor)
     # output_text = output_text.replace('</w>', ' ')
     print("Output Text:", output_text)
+
+
+test()
