@@ -42,6 +42,8 @@ To run hyperparameter tuning, `python tune.py`.
 
 To change the tokenizer, please comment/uncomment the line `from data_token import encode, decode` in data.py and adapt the vocabulary size in the GPTconfig.
 
+To change the inference algorithm, please choose to uncomment one line amond 21-23 of `eval.py`.
+
 To run the annotated transformer code, please make sure to install the dependencies. To avoid using an old Pytorch version, I edited the `requirements.txt` to specify a recent working setup. There is also a bug with the data loader in the original code, you may need to force uncompression with `tar -xvf mmt16_task1_[train,val,test].tar.gz` and then delete the archive files from the `datasets` subfolder which was automatically created.
 
 ## Session 03 (09-30-2024): BERT
