@@ -12,9 +12,13 @@ from tqdm import tqdm
 from data import train_data, val_data, chars, GPTConfig
 from model import GPT
 
-def main():
-    learning_rate = 6e-4 # max learning rate
-    max_iters = 600000 # total number of training iterations
+def train(config):
+    # learning_rate = 6e-4 # max learning rate
+
+    learning_rate = config.get('learning_rate', 6e-4)
+    n_layers = config.get('n_layers', 4)
+
+    max_iters = 8001 #600000 # total number of training iterations
     weight_decay = 1e-1
     beta1 = 0.9
     beta2 = 0.95
@@ -22,11 +26,11 @@ def main():
     # learning rate decay settings
     decay_lr = True # whether to decay the learning rate
     warmup_iters = 2000 # how many steps to warm up for
-    lr_decay_iters = 600000 # should be ~= max_iters per Chinchilla
+    lr_decay_iters = max_iters #600000 # should be ~= max_iters per Chinchilla
     min_lr = 6e-5 # minimum learning rate, should be ~= learning_rate/10 per Chinchilla
 
     # system
-    device = 'cpu' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1' etc., or try 'mps' on macbooks
+    device = 'mps' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1' etc., or try 'mps' on macbooks
     dtype = 'float32'
     # dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 'float32', 'bfloat16', or 'float16', the latter will auto implement a GradScaler
     # -----------------------------------------------------------------------------
@@ -55,6 +59,7 @@ def main():
     # poor man's data loader
     batch_size = 128 #12
     gptconf = GPTConfig()
+    gptconf.n_layer = n_layers
 
     def get_batch(split):
         # We recreate np.memmap every batch to avoid a memory leak, as per
@@ -95,8 +100,8 @@ def main():
     # init a new model from scratch
     print("Initializing a new model from scratch")
     # determine the vocab size we'll use for from-scratch training]
-    gptconf = GPTConfig()
-    gptconf.vocab_size = len(chars) + 1
+    # gptconf = GPTConfig()
+    gptconf.vocab_size = 251 #len(chars) + 1
     model = GPT(gptconf)
     # crop down the model block size if desired, using model surgery
     # if block_size < model.config.block_size:
@@ -245,5 +250,11 @@ def main():
         # if iter_num > max_iters:
         #     break
 
+    return model, max_iters, optimizer, lossf
+
 if __name__ == '__main__':
-    main()
+    default_config = {
+        "learning_rate": 6e-4,
+        "n_layers": 4,
+    }
+    train(default_config)

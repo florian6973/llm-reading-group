@@ -29,11 +29,15 @@ itos = { i:ch for i,ch in enumerate(chars) }
 encode = lambda s: [stoi[c] for c in s] # Encoder: Take a string, output a list of integers
 decode = lambda l: ''.join([itos[i] for i in l if i in itos]) # Decoder: take a list of integers, output a string
 
+from data_token import encode, decode
+
 # Train and test splits
 data = torch.tensor(encode(text), dtype=torch.long)
 n = int(0.9*len(data)) # First 90% will be train, rest val
 train_data = data[:n]
 val_data = data[n:]
+
+print(val_data[0])
 
 # os.makedirs(data_dir, exist_ok=True)
 # np.save(data_dir + '/train.bin', train_data.numpy().astype(np.uint16))

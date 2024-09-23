@@ -1,3 +1,6 @@
 torch
 numpy
 tqdm
+bert-score
+ray[tune]
+tokenizers
