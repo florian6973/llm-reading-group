@@ -1,6 +1,6 @@
 torch==2.2.2
 torchdata==0.7.1
-torchtext==0.17.1
+torchtext==0.17.2
 numpy
 tqdm
 bert-score
