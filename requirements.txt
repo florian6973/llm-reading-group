@@ -9,3 +9,4 @@ tokenizers
 spacy
 GPUtil
 altair
+portalocker
