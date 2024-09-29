@@ -9,6 +9,8 @@ tokenizer.json
 # C extensions
 *.so
 
+*.tgz
+
 # Pytorch models
 *.pt
 

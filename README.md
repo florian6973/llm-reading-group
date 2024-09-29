@@ -66,6 +66,10 @@ BERT: https://arxiv.org/abs/1810.04805
 - Review the Annotated Transformer performance after training on GPU
 - BERT presentations and discussion
 
+### Special notes
+
+You can download the weights of the trained models on the shared OneDrive. Please put them in the corresponding folder.
+
 ## Session 04 (10-07-2024)
 
 ### Readings
