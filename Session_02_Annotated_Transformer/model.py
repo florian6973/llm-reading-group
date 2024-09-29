@@ -885,10 +885,10 @@ def train_model(vocab_src, vocab_tgt, spacy_de, spacy_en, config):
 
 def load_trained_model():
     config = {
-        "batch_size": 32*4, #32,
+        "batch_size": 32*4, #32*4,
         "distributed": True, # False
         "num_epochs": 8,
-        "accum_iter": 10,
+        "accum_iter": 2, #10,
         "base_lr": 1.0,
         "max_padding": 72,
         "warmup": 3000,
