@@ -68,7 +68,7 @@ BERT: https://arxiv.org/abs/1810.04805
 
 ### Special notes
 
-You can download the weights of the trained models on the shared OneDrive. Please put them in the corresponding folder.
+You can download the weights of the trained models (de-en, fr-en) on the shared OneDrive. Please put them in the corresponding folder (`session 02` for the de-en example, `session 03/nmt` for the fr-en example). Then, you just need to run `python eval.py` to run inference. To train the model again, run `python.model.py` in each corresponding folder.
 
 ## Session 04 (10-07-2024)
 
