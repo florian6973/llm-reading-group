@@ -21,9 +21,10 @@ def greedy_decode(model, src, src_mask, max_len, start_symbol):
 def transition_fn(model, memory, src, src_mask, ys, beam_width):
 
     # print(state)
+    device = "cpu"
 
     out = model.decode(
-        memory, src_mask, ys, subsequent_mask(ys.size(1)).type_as(src.data)
+        memory, src_mask.to(device), ys.to(device), subsequent_mask(ys.size(1)).type_as(src.data).to(device)
     )
     probs = model.generator(out[:, -1])
 
@@ -56,8 +57,9 @@ def beam_search_abs(model, src, src_mask, max_len, start_symbol, transition_fn, 
     # `max_len`: the maximum length of the output sequence
     
     # Initialize the beam with the start state
+    device = "cpu"
     ys = torch.zeros(1, 1).fill_(start_symbol).type_as(src.data)
-    memory = model.encode(src, src_mask)
+    memory = model.encode(src.to(device), src_mask.to(device))
     beam = [(ys, [], 0)]
     
     # Iterate until we reach the maximum length or run out of candidates
@@ -142,8 +144,9 @@ def run_model_example(n_examples=5):
 
     model = make_model(len(vocab_src), len(vocab_tgt), N=6)
     model.load_state_dict(
-        torch.load("multi30k_model_final.pt", map_location=torch.device("cpu"))
+        torch.load("multi30k_model_final_ddp_large.pt", map_location=torch.device("cpu"))
     )
+    # model = model.to("cuda")
 
     print("Checking Model Outputs:")
     example_data = check_outputs(
