@@ -5,6 +5,10 @@ __pycache__/
 
 datasets/
 tokenizer.json
+test-mlm
+test-mlm-pretrain
+pretrain_test
+distilbert-base-uncased-finetuned-ner
 
 # C extensions
 *.so

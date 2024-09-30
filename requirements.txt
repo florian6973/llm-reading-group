@@ -10,3 +10,9 @@ spacy
 GPUtil
 altair
 portalocker
+transformers
+datasets
+evaluate
+accelerate
+sklearn
+seqeval

@@ -68,7 +68,11 @@ BERT: https://arxiv.org/abs/1810.04805
 
 ### Special notes
 
-You can download the weights of the trained models (de-en, fr-en) on the shared OneDrive. Please put them in the corresponding folder (`session 02` for the de-en example, `session 03/nmt` for the fr-en example). Then, you just need to run `python eval.py` to run inference. To train the model again, run `python.model.py` in each corresponding folder.
+You can download the weights of the trained models (de-en, fr-en) on the shared OneDrive. Please put them in the corresponding folder (`session 02` for the de-en example, `session 03/nmt` for the fr-en example). Then, you just need to run `python eval.py` to run inference. To train the model again, run `python model.py` for de-en or `python data.py` for fr-en in the corresponding folders.
+
+For pretraining BERT: `python bert_pretrain.py --config_name roberta-base --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 8 --per_device_eval_batch_size 8 --do_train --do_eval --output_dir test-mlm-pretrain --tokenizer_name FacebookAI/roberta-base`.
+
+For BERT finetuning, please see the notebook `Token_Classification.ipynb`.
 
 ## Session 04 (10-07-2024)
 
