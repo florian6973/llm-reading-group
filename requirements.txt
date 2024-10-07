@@ -16,3 +16,5 @@ evaluate
 accelerate
 sklearn
 seqeval
+sentencepiece
+accelerate
