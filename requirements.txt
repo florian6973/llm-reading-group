@@ -18,3 +18,4 @@ sklearn
 seqeval
 sentencepiece
 accelerate
+lm-eval
