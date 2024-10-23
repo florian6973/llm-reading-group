@@ -78,15 +78,15 @@ For BERT finetuning, please see the notebook `Token_Classification.ipynb`.
 
 ### Readings
 
-Llama
+Llama 1: https://arxiv.org/abs/2302.13971
 
 ### Assignments
 
-TBD
+Llama 1: presenter, social and clinical impact, peer-reviewer and hacker
 
 ### Session planning
 
-TBD
+- Llama 1 presentations and discussion
 
 ## Code formatting
 

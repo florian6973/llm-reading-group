@@ -9,6 +9,9 @@ test-mlm
 test-mlm-pretrain
 pretrain_test
 distilbert-base-uncased-finetuned-ner
+wandb
+finetuned_model
+finetuned_model_large
 
 # C extensions
 *.so
