@@ -5,7 +5,7 @@
 
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 # Import libraries
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
@@ -18,20 +18,21 @@ from transformers import DataCollatorForLanguageModeling
 
 import utils as u
 
-tokenizer, model = u.load_model_and_tokenizer("vanilla")
+tokenizer, model = u.load_model_and_tokenizer("vanilla-instruct")
 tokenized_datasets = u.get_dataset(tokenizer)
 
-folder = './finetuning_full_10'
+folder = './finetuning_instruct_full_1_all_eos'
 
 
 training_args = TrainingArguments(
     output_dir=folder,
-    num_train_epochs=10,           # Adjust based on your needs
+    num_train_epochs=1,           # Adjust based on your needs
     per_device_train_batch_size=1,  # Adjust based on your hardware
     save_steps=5000,             # Adjust based on your preferences
     eval_steps=1000,              # Adjust based on your preferences
     run_name=folder, # W&B syncing is set to `offline` in this directory.
     report_to="none",
+    gradient_accumulation_steps=4,
     prediction_loss_only=True
     # Add additional arguments like learning rate, weight decay, etc.
 )
