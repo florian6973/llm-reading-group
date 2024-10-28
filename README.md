@@ -76,6 +76,15 @@ For BERT finetuning, please see the notebook `Token_Classification.ipynb`.
 
 ## Session 04 (10-07-2024)
 
+- Testing OpenLlama non-finetuned and finetuned (instruct) on GSM8k. 
+- Testing Eval-LM to run benchmarks `lm_eval --model hf \
+>     --model_args pretrained=openlm-research/open_llama_3b_v2 \
+>     --tasks hellaswag \
+>     --device cuda:2 \
+>     --batch_size 8`.
+
+## Session 04 (10-14-2024)
+
 ### Readings
 
 Llama 1: https://arxiv.org/abs/2302.13971
