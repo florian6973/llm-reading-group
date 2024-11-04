@@ -38,7 +38,10 @@ def load_model_and_tokenizer(type_dataset, add_padding=True):
         model_path = '/gpfs/commons/groups/gursoy_lab/fpollet/Git/llm-reading-group/Session_06-Basic_Finetuning/finetuned_model/checkpoint-19800'
     elif type_dataset == 'ft-instruct':
         tokenizer_path = '/gpfs/commons/groups/gursoy_lab/fpollet/models/Llama-3.2-1B-Instruct'
-        model_path = '/gpfs/commons/groups/gursoy_lab/fpollet/Git/llm-reading-group/Session_06-Basic_Finetuning/finetuning_instruct_full_10_eos/checkpoint-5000'
+        model_path = '/gpfs/commons/groups/gursoy_lab/fpollet/Git/llm-reading-group/Session_06-Basic_Finetuning/finetuning_instruct_full_2_all_eos/checkpoint-74653'
+
+        # model_path = '/gpfs/commons/groups/gursoy_lab/fpollet/Git/llm-reading-group/Session_06-Basic_Finetuning/finetuning_instruct_full_1_all_eos/checkpoint-40000'
+        #model_path = '/gpfs/commons/groups/gursoy_lab/fpollet/Git/llm-reading-group/Session_06-Basic_Finetuning/finetuning_instruct_full_10_eos/checkpoint-5000'
 
         # model_path = '/gpfs/commons/groups/gursoy_lab/fpollet/Git/llm-reading-group/Session_06-Basic_Finetuning/finetuning_instruct_full_10/checkpoint-99000'
     elif type_dataset == 'lora':

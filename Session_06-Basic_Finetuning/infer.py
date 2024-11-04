@@ -12,6 +12,8 @@ from transformers import pipeline
 import argparse
 
 import utils as u
+from tqdm import tqdm
+
 
 if __name__ == '__main__':
     
@@ -59,16 +61,53 @@ if __name__ == '__main__':
     # run everything
 
     # https://huggingface.co/docs/transformers/generation_strategies
+    # pip = pipeline("text-generation", model=model, model_kwargs={"torch_dtype": torch.bfloat16}, device_map="cuda:2", tokenizer=tokenizer,
+    #                do_sample=True, num_beams=2, temperature = 1.5, repetition_penalty = 1.5)
     pip = pipeline("text-generation", model=model, model_kwargs={"torch_dtype": torch.bfloat16}, device_map="cuda:2", tokenizer=tokenizer,
-                   do_sample=True, num_beams=2, temperature = 1.5, repetition_penalty = 1.5)
+                   do_sample=True, num_beams=5, temperature = 0.5) #3.)
+    #0.1 crashes
+    # pip = pipeline("text-generation", model=model, model_kwargs={"torch_dtype": torch.bfloat16}, device_map="cuda:2", tokenizer=tokenizer,
+    #                do_sample=True, num_beams=5, temperature = 0.1)
     # set_seed(44)#22)#1)
-    set_seed(123)#66 88 #22)#1)
+    # set_seed(191919)#66 88 #22)#1)
+    # set_seed(19191922)#66 88 #22)#1)
 
-    text2 = pip("Medical context. Generate a clinical discharge summary.\nName: ", max_new_tokens=4096)
-    print(text2)
-    print(text2[0]['generated_text'])
-    with open(f'output_{args.model_type}_2.txt', 'w') as f:
-        f.write(text2[0]['generated_text'])
+
+
+
+    # text2 = pip("Medical context. Generate a clinical discharge summary about car accident.\n\nName:", max_new_tokens=4096)
+    # text2 = pip("""Medical context. Generate a unique clinical discharge summary. Follow the whole discharge summary template below:
+    #                 - Name, Unit No, Admission date, Discharge date, DOB, Sex, Service
+    #                 - Allergies, Attending, Chief complaint, Major procedure
+    #                 - History of Present Illness
+    #                 - Past medical history
+    #                 - Social history
+    #                 - Family history
+    #                 - Physical Exam
+    #                 - Pertinent Results
+    #                 - Brief hospital course
+    #                 - Medications on admission
+    #                 - Discharge medications
+    #                 - Discharge disposition
+    #                 - Discharge diagnosis
+    #                 - Discharge condition
+    #                 - Discharge condition
+    #                 - Discharge Instructions
+    #                 - Follow-up instructions.
+    #             \n\n""", max_new_tokens=4096)
+
+    for i in tqdm(range(0, 1000)):
+        set_seed(i)
+    
+        # text2 = pip("### Instruction: generate a clinical note, including some content about alcohol and drug use in the social history section.\n\n### Answer:\n\n""", max_new_tokens=4096)
+        text2 = pip("### Instruction: generate a clinical note.\n\n### Answer:\n\n""", max_new_tokens=4096)
+
+        # text2 = pip("Medical context. Generate a clinical discharge summary about car accident. Follow the whole discharge summary template.\n\n", max_new_tokens=4096)
+        print(text2)
+        print(text2[0]['generated_text'])
+        # make sure make dir
+        with open(f'gens_10/output_{args.model_type}_{i:03}.txt', 'w') as f:
+            f.write(text2[0]['generated_text'])
 
     # text3 = pip("### Instruction: generate a clinical note.\n\n### Answer:\n", max_new_tokens=3000)
     # print(text3[0]['generated_text'])

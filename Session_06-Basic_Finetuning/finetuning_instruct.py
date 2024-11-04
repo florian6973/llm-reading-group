@@ -21,7 +21,7 @@ import utils as u
 tokenizer, model = u.load_model_and_tokenizer("vanilla-instruct")
 tokenized_datasets = u.get_dataset(tokenizer)
 
-folder = './finetuning_instruct_full_1_all_eos'
+folder = './finetuning_instruct_full_2_all_eos'
 
 
 training_args = TrainingArguments(
